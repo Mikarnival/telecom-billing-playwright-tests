@@ -1,24 +1,5 @@
-from collections.abc import Generator
-
 import pytest
-from playwright.sync_api import APIRequestContext, Playwright
-
-
-@pytest.fixture
-def api_context(playwright: Playwright) -> Generator[APIRequestContext, None, None]:
-    context = playwright.request.new_context(
-        base_url="http://localhost:8000"
-    )
-
-    yield context
-
-    context.dispose()
-
-
-@pytest.fixture(autouse=True)
-def reset_test_data(api_context: APIRequestContext) -> None:
-    response = api_context.post("/api/test/reset")
-    assert response.ok
+from playwright.sync_api import APIRequestContext
 
 
 @pytest.mark.api
@@ -32,7 +13,10 @@ def test_health_check_returns_ok(api_context: APIRequestContext) -> None:
 
 @pytest.mark.api
 @pytest.mark.smoke
-def test_list_invoices_returns_default_invoices(api_context: APIRequestContext) -> None:
+def test_list_invoices_returns_default_invoices(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
     response = api_context.get("/api/invoices")
 
     assert response.status == 200
@@ -46,7 +30,10 @@ def test_list_invoices_returns_default_invoices(api_context: APIRequestContext) 
 
 
 @pytest.mark.api
-def test_search_invoice_by_customer_name(api_context: APIRequestContext) -> None:
+def test_search_invoice_by_customer_name(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
     response = api_context.get("/api/invoices?query=Beta")
 
     assert response.status == 200
@@ -59,7 +46,10 @@ def test_search_invoice_by_customer_name(api_context: APIRequestContext) -> None
 
 
 @pytest.mark.api
-def test_filter_unpaid_invoices(api_context: APIRequestContext) -> None:
+def test_filter_unpaid_invoices(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
     response = api_context.get("/api/invoices?status=Unpaid")
 
     assert response.status == 200
@@ -72,7 +62,10 @@ def test_filter_unpaid_invoices(api_context: APIRequestContext) -> None:
 
 
 @pytest.mark.api
-def test_get_invoice_by_id(api_context: APIRequestContext) -> None:
+def test_get_invoice_by_id(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
     response = api_context.get("/api/invoices/INV-1002")
 
     assert response.status == 200
@@ -98,7 +91,10 @@ def test_get_unknown_invoice_returns_404(api_context: APIRequestContext) -> None
 
 @pytest.mark.api
 @pytest.mark.smoke
-def test_mark_invoice_as_paid_through_api(api_context: APIRequestContext) -> None:
+def test_mark_invoice_as_paid_through_api(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
     response = api_context.patch("/api/invoices/INV-1002/pay")
 
     assert response.status == 200

@@ -1,25 +1,17 @@
 import re
 
 import pytest
-from playwright.sync_api import APIRequestContext, Page, expect
-
-
-@pytest.fixture(autouse=True)
-def reset_test_data_before_each_ui_test(playwright) -> None:
-    api_context: APIRequestContext = playwright.request.new_context(
-        base_url="http://localhost:8000"
-    )
-
-    response = api_context.post("/api/test/reset")
-    assert response.ok
-
-    api_context.dispose()
+from playwright.sync_api import Page, expect
 
 
 @pytest.mark.ui
 @pytest.mark.smoke
-def test_dashboard_loads_invoice_table(page: Page) -> None:
-    page.goto("http://localhost:3000")
+def test_dashboard_loads_invoice_table(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    page.goto(frontend_base_url)
 
     expect(page).to_have_title("Telecom Billing Dashboard")
     expect(page.get_by_role("heading", name="Telecom Billing Dashboard")).to_be_visible()
@@ -33,8 +25,12 @@ def test_dashboard_loads_invoice_table(page: Page) -> None:
 
 @pytest.mark.ui
 @pytest.mark.smoke
-def test_search_customer_shows_matching_invoice_only(page: Page) -> None:
-    page.goto("http://localhost:3000")
+def test_search_customer_shows_matching_invoice_only(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    page.goto(frontend_base_url)
 
     page.get_by_label("Search customer or invoice").fill("Beta")
 
@@ -54,8 +50,12 @@ def test_search_customer_shows_matching_invoice_only(page: Page) -> None:
 
 @pytest.mark.ui
 @pytest.mark.smoke
-def test_filter_unpaid_invoices(page: Page) -> None:
-    page.goto("http://localhost:3000")
+def test_filter_unpaid_invoices(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    page.goto(frontend_base_url)
 
     page.get_by_label("Invoice status").select_option("Unpaid")
 
@@ -73,8 +73,12 @@ def test_filter_unpaid_invoices(page: Page) -> None:
 
 @pytest.mark.ui
 @pytest.mark.smoke
-def test_user_can_mark_unpaid_invoice_as_paid(page: Page) -> None:
-    page.goto("http://localhost:3000")
+def test_user_can_mark_unpaid_invoice_as_paid(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    page.goto(frontend_base_url)
 
     invoice_row = page.get_by_test_id("invoice-row-INV-1002")
 
