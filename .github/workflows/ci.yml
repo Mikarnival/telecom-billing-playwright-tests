@@ -52,7 +52,18 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v --tracing=retain-on-failure --screenshot=only-on-failure
+          pytest -v \
+            --junitxml=test-results/pytest-results.xml \
+            --tracing=retain-on-failure \
+            --screenshot=only-on-failure
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: test-results/
+          if-no-files-found: ignore
 
       - name: Upload Playwright artifacts
         if: failure()

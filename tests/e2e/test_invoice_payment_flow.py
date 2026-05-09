@@ -1,5 +1,8 @@
 import pytest
-from playwright.sync_api import APIRequestContext, Page, expect
+from playwright.sync_api import Page
+
+from api_clients.invoice_client import InvoiceClient
+from pages.billing_dashboard_page import BillingDashboardPage
 
 
 @pytest.mark.e2e
@@ -7,20 +10,23 @@ from playwright.sync_api import APIRequestContext, Page, expect
 def test_mark_invoice_as_paid_from_ui_and_verify_by_api(
     page: Page,
     frontend_base_url: str,
-    api_context: APIRequestContext,
+    invoice_client: InvoiceClient,
     reset_test_data: None,
 ) -> None:
-    page.goto(frontend_base_url)
+    dashboard = BillingDashboardPage(page, frontend_base_url)
 
-    invoice_row = page.get_by_test_id("invoice-row-INV-1002")
+    dashboard.open()
+    dashboard.expect_loaded()
 
-    expect(invoice_row).to_contain_text("Unpaid")
+    dashboard.expect_invoice_status("INV-1002", "Unpaid")
 
-    invoice_row.get_by_role("button", name="Mark as Paid").click()
+    dashboard.mark_invoice_as_paid("INV-1002")
 
-    expect(page.get_by_text("INV-1002 was marked as paid")).to_be_visible()
+    dashboard.expect_payment_success_message("INV-1002")
+    dashboard.expect_invoice_status("INV-1002", "Paid")
+    dashboard.expect_mark_as_paid_button_disabled("INV-1002")
 
-    response = api_context.get("/api/invoices/INV-1002")
+    response = invoice_client.get_invoice("INV-1002")
 
     assert response.status == 200
 

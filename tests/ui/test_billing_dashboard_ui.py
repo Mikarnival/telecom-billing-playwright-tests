@@ -1,7 +1,7 @@
-import re
-
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
+
+from pages.billing_dashboard_page import BillingDashboardPage
 
 
 @pytest.mark.ui
@@ -11,16 +11,26 @@ def test_dashboard_loads_invoice_table(
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    page.goto(frontend_base_url)
+    dashboard = BillingDashboardPage(page, frontend_base_url)
 
-    expect(page).to_have_title("Telecom Billing Dashboard")
-    expect(page.get_by_role("heading", name="Telecom Billing Dashboard")).to_be_visible()
+    dashboard.open()
+    dashboard.expect_loaded()
 
-    invoice_table = page.get_by_role("table", name="Invoices")
+    dashboard.expect_invoice_visible("INV-1001")
+    dashboard.expect_invoice_visible("INV-1002")
+    dashboard.expect_invoice_visible("INV-1003")
 
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1001"))).to_be_visible()
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1002"))).to_be_visible()
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1003"))).to_be_visible()
+    dashboard.expect_invoice_contains("INV-1001", "Alice Mobile")
+    dashboard.expect_invoice_contains("INV-1001", "$89.00")
+    dashboard.expect_invoice_contains("INV-1001", "Paid")
+
+    dashboard.expect_invoice_contains("INV-1002", "Beta Telecom")
+    dashboard.expect_invoice_contains("INV-1002", "$249.00")
+    dashboard.expect_invoice_contains("INV-1002", "Unpaid")
+
+    dashboard.expect_invoice_contains("INV-1003", "Delta GmbH")
+    dashboard.expect_invoice_contains("INV-1003", "$399.00")
+    dashboard.expect_invoice_contains("INV-1003", "Overdue")
 
 
 @pytest.mark.ui
@@ -30,22 +40,44 @@ def test_search_customer_shows_matching_invoice_only(
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    page.goto(frontend_base_url)
+    dashboard = BillingDashboardPage(page, frontend_base_url)
 
-    page.get_by_label("Search customer or invoice").fill("Beta")
+    dashboard.open()
+    dashboard.expect_loaded()
 
-    invoice_table = page.get_by_role("table", name="Invoices")
+    dashboard.search_invoice("Beta")
 
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1002"))).to_be_visible()
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1001"))).to_have_count(0)
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1003"))).to_have_count(0)
+    dashboard.expect_invoice_visible("INV-1002")
+    dashboard.expect_invoice_not_present("INV-1001")
+    dashboard.expect_invoice_not_present("INV-1003")
 
-    beta_invoice = page.get_by_test_id("invoice-row-INV-1002")
+    dashboard.expect_invoice_contains("INV-1002", "Beta Telecom")
+    dashboard.expect_invoice_contains("INV-1002", "Fiber Business")
+    dashboard.expect_invoice_contains("INV-1002", "$249.00")
+    dashboard.expect_invoice_contains("INV-1002", "Unpaid")
 
-    expect(beta_invoice).to_contain_text("Beta Telecom")
-    expect(beta_invoice).to_contain_text("Fiber Business")
-    expect(beta_invoice).to_contain_text("$249.00")
-    expect(beta_invoice).to_contain_text("Unpaid")
+
+@pytest.mark.ui
+def test_search_invoice_by_invoice_id(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    dashboard = BillingDashboardPage(page, frontend_base_url)
+
+    dashboard.open()
+    dashboard.expect_loaded()
+
+    dashboard.search_invoice("INV-1003")
+
+    dashboard.expect_invoice_visible("INV-1003")
+    dashboard.expect_invoice_not_present("INV-1001")
+    dashboard.expect_invoice_not_present("INV-1002")
+
+    dashboard.expect_invoice_contains("INV-1003", "Delta GmbH")
+    dashboard.expect_invoice_contains("INV-1003", "Business Mobile")
+    dashboard.expect_invoice_contains("INV-1003", "$399.00")
+    dashboard.expect_invoice_contains("INV-1003", "Overdue")
 
 
 @pytest.mark.ui
@@ -55,20 +87,61 @@ def test_filter_unpaid_invoices(
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    page.goto(frontend_base_url)
+    dashboard = BillingDashboardPage(page, frontend_base_url)
 
-    page.get_by_label("Invoice status").select_option("Unpaid")
+    dashboard.open()
+    dashboard.expect_loaded()
 
-    invoice_table = page.get_by_role("table", name="Invoices")
+    dashboard.filter_by_status("Unpaid")
 
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1002"))).to_be_visible()
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1001"))).to_have_count(0)
-    expect(invoice_table.get_by_role("row", name=re.compile("INV-1003"))).to_have_count(0)
+    dashboard.expect_invoice_visible("INV-1002")
+    dashboard.expect_invoice_not_present("INV-1001")
+    dashboard.expect_invoice_not_present("INV-1003")
 
-    unpaid_invoice = page.get_by_test_id("invoice-row-INV-1002")
+    dashboard.expect_invoice_contains("INV-1002", "Beta Telecom")
+    dashboard.expect_invoice_contains("INV-1002", "Unpaid")
 
-    expect(unpaid_invoice).to_contain_text("Beta Telecom")
-    expect(unpaid_invoice).to_contain_text("Unpaid")
+
+@pytest.mark.ui
+def test_filter_paid_invoices(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    dashboard = BillingDashboardPage(page, frontend_base_url)
+
+    dashboard.open()
+    dashboard.expect_loaded()
+
+    dashboard.filter_by_status("Paid")
+
+    dashboard.expect_invoice_visible("INV-1001")
+    dashboard.expect_invoice_not_present("INV-1002")
+    dashboard.expect_invoice_not_present("INV-1003")
+
+    dashboard.expect_invoice_contains("INV-1001", "Alice Mobile")
+    dashboard.expect_invoice_contains("INV-1001", "Paid")
+
+
+@pytest.mark.ui
+def test_filter_overdue_invoices(
+    page: Page,
+    frontend_base_url: str,
+    reset_test_data: None,
+) -> None:
+    dashboard = BillingDashboardPage(page, frontend_base_url)
+
+    dashboard.open()
+    dashboard.expect_loaded()
+
+    dashboard.filter_by_status("Overdue")
+
+    dashboard.expect_invoice_visible("INV-1003")
+    dashboard.expect_invoice_not_present("INV-1001")
+    dashboard.expect_invoice_not_present("INV-1002")
+
+    dashboard.expect_invoice_contains("INV-1003", "Delta GmbH")
+    dashboard.expect_invoice_contains("INV-1003", "Overdue")
 
 
 @pytest.mark.ui
@@ -78,17 +151,15 @@ def test_user_can_mark_unpaid_invoice_as_paid(
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    page.goto(frontend_base_url)
+    dashboard = BillingDashboardPage(page, frontend_base_url)
 
-    invoice_row = page.get_by_test_id("invoice-row-INV-1002")
+    dashboard.open()
+    dashboard.expect_loaded()
 
-    expect(invoice_row).to_contain_text("Unpaid")
+    dashboard.expect_invoice_status("INV-1002", "Unpaid")
 
-    invoice_row.get_by_role("button", name="Mark as Paid").click()
+    dashboard.mark_invoice_as_paid("INV-1002")
 
-    expect(page.get_by_text("INV-1002 was marked as paid")).to_be_visible()
-
-    updated_invoice_row = page.get_by_test_id("invoice-row-INV-1002")
-
-    expect(updated_invoice_row).to_contain_text("Paid")
-    expect(updated_invoice_row.get_by_role("button", name="Mark as Paid")).to_be_disabled()
+    dashboard.expect_payment_success_message("INV-1002")
+    dashboard.expect_invoice_status("INV-1002", "Paid")
+    dashboard.expect_mark_as_paid_button_disabled("INV-1002")
