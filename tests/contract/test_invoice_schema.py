@@ -44,7 +44,7 @@ def test_invoice_response_field_types(
     assert isinstance(invoice["customer_name"], str)
     assert isinstance(invoice["contract_id"], str)
     assert isinstance(invoice["plan"], str)
-    assert isinstance(invoice["amount"], float | int)
+    assert isinstance(invoice["amount"], (float, int))
     assert isinstance(invoice["status"], str)
     assert isinstance(invoice["billing_period"], str)
 
@@ -63,3 +63,33 @@ def test_invoice_status_has_valid_value(
     allowed_statuses = {"Paid", "Unpaid", "Overdue"}
 
     assert invoice["status"] in allowed_statuses
+
+
+@pytest.mark.contract
+def test_invoice_list_response_contains_invoice_objects(
+    invoice_client: InvoiceClient,
+    reset_test_data: None,
+) -> None:
+    response = invoice_client.list_invoices()
+
+    assert response.status == 200
+
+    invoices = response.json()
+
+    assert isinstance(invoices, list)
+    assert len(invoices) > 0
+
+    first_invoice = invoices[0]
+
+    required_fields = {
+        "invoice_id",
+        "customer_id",
+        "customer_name",
+        "contract_id",
+        "plan",
+        "amount",
+        "status",
+        "billing_period",
+    }
+
+    assert required_fields.issubset(first_invoice.keys())
