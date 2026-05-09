@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   test:
@@ -30,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Playwright browsers
+      - name: Install Playwright Chromium
         run: |
           playwright install --with-deps chromium
 
@@ -50,13 +50,9 @@ jobs:
         run: |
           curl --retry 10 --retry-delay 2 --retry-connrefused http://localhost:3000
 
-      - name: Run API tests
+      - name: Run tests
         run: |
-          pytest tests/api -m api -v
-
-      - name: Run UI and E2E smoke tests
-        run: |
-          pytest tests/ui tests/e2e -m "ui or e2e or smoke" -v --tracing=retain-on-failure --screenshot=only-on-failure
+          pytest -v --tracing=retain-on-failure --screenshot=only-on-failure
 
       - name: Upload Playwright artifacts
         if: failure()
