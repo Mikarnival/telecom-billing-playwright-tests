@@ -40,7 +40,7 @@ INITIAL_CUSTOMERS: list[dict[str, Any]] = [
     {
         "customer_id": "CUST-001",
         "customer_name": "Alice Mobile",
-        "customer_type": "Consumer",
+        "customer_type": "Private",
         "status": "Active",
     },
     {

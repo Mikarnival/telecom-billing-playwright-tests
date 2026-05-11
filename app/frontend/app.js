@@ -9,6 +9,7 @@ const lifecycleCustomerSearch = document.querySelector("#lifecycle-customer-sear
 const customerTableBody = document.querySelector("#customer-table-body");
 const contractTableBody = document.querySelector("#contract-table-body");
 const customerContractMessage = document.querySelector("#customer-contract-message");
+let customerSearchRequestId = 0;
 
 function formatAmount(amount) {
   return `$${amount.toFixed(2)}`;
@@ -47,7 +48,7 @@ function renderInvoices(invoices) {
   if (invoices.length === 0) {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td colspan="7">No invoices found</td>
+      <td colspan="8">No invoices found</td>
     `;
     tableBody.appendChild(row);
     return;
@@ -61,6 +62,7 @@ function renderInvoices(invoices) {
 
     row.innerHTML = `
       <td>${invoice.invoice_id}</td>
+      <td>${invoice.customer_id}</td>
       <td>${invoice.customer_name}</td>
       <td>${invoice.contract_id}</td>
       <td>${invoice.plan}</td>
@@ -202,8 +204,12 @@ async function findRelatedContractId(customerId) {
   return invoice ? invoice.contract_id : null;
 }
 
-async function loadRelatedContract(customerId) {
+async function loadRelatedContract(customerId, requestId) {
   const contractId = await findRelatedContractId(customerId);
+
+  if (requestId !== customerSearchRequestId) {
+    return;
+  }
 
   if (!contractId) {
     renderNoContractFound();
@@ -211,6 +217,10 @@ async function loadRelatedContract(customerId) {
   }
 
   const response = await fetch(`${API_BASE_URL}/api/contracts/${contractId}`);
+
+  if (requestId !== customerSearchRequestId) {
+    return;
+  }
 
   if (!response.ok) {
     renderNoContractFound();
@@ -222,6 +232,9 @@ async function loadRelatedContract(customerId) {
 }
 
 async function searchCustomer() {
+  customerSearchRequestId += 1;
+  const requestId = customerSearchRequestId;
+
   setCustomerContractMessage("");
 
   const customerId = lifecycleCustomerSearch.value.trim();
@@ -236,6 +249,10 @@ async function searchCustomer() {
       `${API_BASE_URL}/api/customers/${encodeURIComponent(customerId)}`
     );
 
+    if (requestId !== customerSearchRequestId) {
+      return;
+    }
+
     if (response.status === 404) {
       renderNoCustomerFound();
       return;
@@ -248,8 +265,12 @@ async function searchCustomer() {
     const customer = await response.json();
 
     renderCustomer(customer);
-    await loadRelatedContract(customer.customer_id);
+    await loadRelatedContract(customer.customer_id, requestId);
   } catch (error) {
+    if (requestId !== customerSearchRequestId) {
+      return;
+    }
+
     renderNoCustomerFound();
     setCustomerContractMessage("Could not load customer from API", "error");
   }
