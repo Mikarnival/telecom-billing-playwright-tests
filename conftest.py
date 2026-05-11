@@ -3,7 +3,10 @@ from collections.abc import Generator
 import pytest
 from playwright.sync_api import APIRequestContext, Playwright
 
+from api_clients.contract_client import ContractClient
+from api_clients.customer_client import CustomerClient
 from api_clients.invoice_client import InvoiceClient
+
 
 @pytest.fixture(scope="session")
 def frontend_base_url() -> str:
@@ -38,3 +41,13 @@ def reset_test_data(api_context: APIRequestContext) -> None:
 @pytest.fixture
 def invoice_client(api_context: APIRequestContext) -> InvoiceClient:
     return InvoiceClient(api_context)
+
+
+@pytest.fixture
+def customer_client(api_context: APIRequestContext) -> CustomerClient:
+    return CustomerClient(api_context)
+
+
+@pytest.fixture
+def contract_client(api_context: APIRequestContext) -> ContractClient:
+    return ContractClient(api_context)

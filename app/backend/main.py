@@ -2,7 +2,12 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.backend.data import (
+    activate_contract,
+    create_contract,
+    create_customer,
     get_all_invoices,
+    get_contract_by_id,
+    get_customer_by_id,
     get_invoice_by_id,
     mark_invoice_as_paid,
     reset_data,
@@ -74,3 +79,60 @@ def pay_invoice(invoice_id: str) -> dict:
         )
 
     return invoice
+
+
+@app.post("/api/customers")
+def add_customer(customer_data: dict) -> dict:
+    return create_customer(customer_data)
+
+
+@app.get("/api/customers/{customer_id}")
+def get_customer(customer_id: str) -> dict:
+    customer = get_customer_by_id(customer_id)
+
+    if customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Customer {customer_id} not found",
+        )
+
+    return customer
+
+
+@app.post("/api/contracts")
+def add_contract(contract_data: dict) -> dict:
+    contract = create_contract(contract_data)
+
+    if contract is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Customer {contract_data['customer_id']} not found",
+        )
+
+    return contract
+
+
+@app.get("/api/contracts/{contract_id}")
+def get_contract(contract_id: str) -> dict:
+    contract = get_contract_by_id(contract_id)
+
+    if contract is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Contract {contract_id} not found",
+        )
+
+    return contract
+
+
+@app.patch("/api/contracts/{contract_id}/activate")
+def activate_existing_contract(contract_id: str) -> dict:
+    contract = activate_contract(contract_id)
+
+    if contract is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Contract {contract_id} not found",
+        )
+
+    return contract

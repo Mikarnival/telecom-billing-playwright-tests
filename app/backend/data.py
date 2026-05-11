@@ -36,7 +36,53 @@ INITIAL_INVOICES: list[dict[str, Any]] = [
 ]
 
 
+INITIAL_CUSTOMERS: list[dict[str, Any]] = [
+    {
+        "customer_id": "CUST-001",
+        "customer_name": "Alice Mobile",
+        "customer_type": "Consumer",
+        "status": "Active",
+    },
+    {
+        "customer_id": "CUST-002",
+        "customer_name": "Beta Telecom",
+        "customer_type": "Business",
+        "status": "Active",
+    },
+    {
+        "customer_id": "CUST-003",
+        "customer_name": "Delta GmbH",
+        "customer_type": "Business",
+        "status": "Active",
+    },
+]
+
+
+INITIAL_CONTRACTS: list[dict[str, Any]] = [
+    {
+        "contract_id": "CON-5001",
+        "customer_id": "CUST-001",
+        "plan": "5G Unlimited",
+        "status": "Active",
+    },
+    {
+        "contract_id": "CON-5002",
+        "customer_id": "CUST-002",
+        "plan": "Fiber Business",
+        "status": "Active",
+    },
+    {
+        "contract_id": "CON-5003",
+        "customer_id": "CUST-003",
+        "plan": "Business Mobile",
+        "status": "Active",
+    },
+]
+
+
 invoices: list[dict[str, Any]] = deepcopy(INITIAL_INVOICES)
+customers: list[dict[str, Any]] = deepcopy(INITIAL_CUSTOMERS)
+contracts: list[dict[str, Any]] = deepcopy(INITIAL_CONTRACTS)
 
 
 def reset_data() -> None:
@@ -44,8 +90,10 @@ def reset_data() -> None:
     Reset mock data to its initial state.
     Useful for tests, so each test starts from the same data.
     """
-    global invoices
+    global invoices, customers, contracts
     invoices = deepcopy(INITIAL_INVOICES)
+    customers = deepcopy(INITIAL_CUSTOMERS)
+    contracts = deepcopy(INITIAL_CONTRACTS)
 
 
 def get_all_invoices() -> list[dict[str, Any]]:
@@ -91,3 +139,56 @@ def mark_invoice_as_paid(invoice_id: str) -> dict[str, Any] | None:
 
     invoice["status"] = "Paid"
     return invoice
+
+
+def create_customer(customer_data: dict[str, Any]) -> dict[str, Any]:
+    customer = {
+        "customer_id": customer_data["customer_id"],
+        "customer_name": customer_data["customer_name"],
+        "customer_type": customer_data["customer_type"],
+        "status": "Active",
+    }
+
+    customers.append(customer)
+    return customer
+
+
+def get_customer_by_id(customer_id: str) -> dict[str, Any] | None:
+    for customer in customers:
+        if customer["customer_id"] == customer_id:
+            return customer
+    return None
+
+
+def create_contract(contract_data: dict[str, Any]) -> dict[str, Any] | None:
+    customer = get_customer_by_id(contract_data["customer_id"])
+
+    if customer is None:
+        return None
+
+    contract = {
+        "contract_id": contract_data["contract_id"],
+        "customer_id": contract_data["customer_id"],
+        "plan": contract_data["plan"],
+        "status": "Draft",
+    }
+
+    contracts.append(contract)
+    return contract
+
+
+def get_contract_by_id(contract_id: str) -> dict[str, Any] | None:
+    for contract in contracts:
+        if contract["contract_id"] == contract_id:
+            return contract
+    return None
+
+
+def activate_contract(contract_id: str) -> dict[str, Any] | None:
+    contract = get_contract_by_id(contract_id)
+
+    if contract is None:
+        return None
+
+    contract["status"] = "Active"
+    return contract
