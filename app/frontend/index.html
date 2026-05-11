@@ -21,6 +21,11 @@
         margin-bottom: 8px;
       }
 
+      h2 {
+        margin-top: 40px;
+        margin-bottom: 16px;
+      }
+
       .subtitle {
         color: #6b7280;
         margin-bottom: 24px;
@@ -101,6 +106,16 @@
         color: #9a3412;
       }
 
+      .Active {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .Draft {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
       .message {
         margin-top: 16px;
         font-weight: 700;
@@ -162,6 +177,52 @@
       </table>
 
       <p id="message" class="message" role="status"></p>
+
+      <section aria-labelledby="customer-contract-heading">
+        <h2 id="customer-contract-heading">Customer & Contract Lifecycle</h2>
+
+        <section class="controls" aria-label="Customer search">
+          <div>
+            <label for="lifecycle-customer-search">Search customer</label>
+            <input
+              id="lifecycle-customer-search"
+              placeholder="Customer id"
+            />
+          </div>
+        </section>
+
+        <table aria-label="Customers">
+          <thead>
+            <tr>
+              <th>Customer ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody id="customer-table-body">
+            <tr>
+              <td colspan="4">No customer found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table aria-label="Contracts">
+          <thead>
+            <tr>
+              <th>Contract ID</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="contract-table-body"></tbody>
+        </table>
+
+        <p id="customer-contract-message" class="message" role="status"></p>
+      </section>
     </main>
 
     <script src="./app.js"></script>

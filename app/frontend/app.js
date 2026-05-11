@@ -5,6 +5,10 @@ const statusFilter = document.querySelector("#status-filter");
 const refreshButton = document.querySelector("#refresh-button");
 const tableBody = document.querySelector("#invoice-table-body");
 const message = document.querySelector("#message");
+const lifecycleCustomerSearch = document.querySelector("#lifecycle-customer-search");
+const customerTableBody = document.querySelector("#customer-table-body");
+const contractTableBody = document.querySelector("#contract-table-body");
+const customerContractMessage = document.querySelector("#customer-contract-message");
 
 function formatAmount(amount) {
   return `$${amount.toFixed(2)}`;
@@ -13,6 +17,11 @@ function formatAmount(amount) {
 function setMessage(text, type = "") {
   message.textContent = text;
   message.className = `message ${type}`;
+}
+
+function setCustomerContractMessage(text, type = "") {
+  customerContractMessage.textContent = text;
+  customerContractMessage.className = `message ${type}`;
 }
 
 function buildQueryParams() {
@@ -74,6 +83,68 @@ function renderInvoices(invoices) {
   });
 }
 
+function renderNoCustomerFound() {
+  customerTableBody.innerHTML = `
+    <tr>
+      <td colspan="4">No customer found</td>
+    </tr>
+  `;
+  contractTableBody.innerHTML = "";
+}
+
+function renderCustomer(customer) {
+  customerTableBody.innerHTML = "";
+
+  const row = document.createElement("tr");
+  row.setAttribute("data-testid", `customer-row-${customer.customer_id}`);
+  row.innerHTML = `
+    <td>${customer.customer_id}</td>
+    <td>${customer.customer_name}</td>
+    <td>${customer.customer_type}</td>
+    <td>
+      <span class="status ${customer.status}">${customer.status}</span>
+    </td>
+  `;
+
+  customerTableBody.appendChild(row);
+}
+
+function renderNoContractFound() {
+  contractTableBody.innerHTML = `
+    <tr>
+      <td colspan="4">No related contract found</td>
+    </tr>
+  `;
+}
+
+function renderContract(contract) {
+  contractTableBody.innerHTML = "";
+
+  const row = document.createElement("tr");
+  row.setAttribute("data-testid", `contract-row-${contract.contract_id}`);
+
+  const isDraft = contract.status === "Draft";
+
+  row.innerHTML = `
+    <td>${contract.contract_id}</td>
+    <td>${contract.plan}</td>
+    <td>
+      <span class="status ${contract.status}">${contract.status}</span>
+    </td>
+    <td>
+      <button
+        type="button"
+        data-contract-id="${contract.contract_id}"
+        ${isDraft ? "" : "disabled"}
+      >
+        Activate Contract
+      </button>
+    </td>
+  `;
+
+  contractTableBody.appendChild(row);
+}
+
 async function loadInvoices() {
   setMessage("");
 
@@ -116,6 +187,95 @@ async function markInvoiceAsPaid(invoiceId) {
   }
 }
 
+async function findRelatedContractId(customerId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/invoices?query=${encodeURIComponent(customerId)}`
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const invoices = await response.json();
+  const invoice = invoices.find((item) => item.customer_id === customerId);
+
+  return invoice ? invoice.contract_id : null;
+}
+
+async function loadRelatedContract(customerId) {
+  const contractId = await findRelatedContractId(customerId);
+
+  if (!contractId) {
+    renderNoContractFound();
+    return;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/contracts/${contractId}`);
+
+  if (!response.ok) {
+    renderNoContractFound();
+    return;
+  }
+
+  const contract = await response.json();
+  renderContract(contract);
+}
+
+async function searchCustomer() {
+  setCustomerContractMessage("");
+
+  const customerId = lifecycleCustomerSearch.value.trim();
+
+  if (!customerId) {
+    renderNoCustomerFound();
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/customers/${encodeURIComponent(customerId)}`
+    );
+
+    if (response.status === 404) {
+      renderNoCustomerFound();
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    const customer = await response.json();
+
+    renderCustomer(customer);
+    await loadRelatedContract(customer.customer_id);
+  } catch (error) {
+    renderNoCustomerFound();
+    setCustomerContractMessage("Could not load customer from API", "error");
+  }
+}
+
+async function activateContract(contractId) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/contracts/${contractId}/activate`,
+      {
+        method: "PATCH",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    const contract = await response.json();
+    renderContract(contract);
+    setCustomerContractMessage(`${contract.contract_id} was activated`, "success");
+  } catch (error) {
+    setCustomerContractMessage(`Could not activate contract ${contractId}`, "error");
+  }
+}
+
 searchInput.addEventListener("input", () => {
   loadInvoices();
 });
@@ -137,6 +297,27 @@ tableBody.addEventListener("click", (event) => {
 
   const invoiceId = button.dataset.invoiceId;
   markInvoiceAsPaid(invoiceId);
+});
+
+lifecycleCustomerSearch.addEventListener("input", () => {
+  searchCustomer();
+});
+
+lifecycleCustomerSearch.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    searchCustomer();
+  }
+});
+
+contractTableBody.addEventListener("click", (event) => {
+  const button = event.target.closest("button");
+
+  if (!button) {
+    return;
+  }
+
+  const contractId = button.dataset.contractId;
+  activateContract(contractId);
 });
 
 loadInvoices();
