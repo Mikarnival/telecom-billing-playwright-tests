@@ -2,37 +2,45 @@
 
 ## Project Overview
 
-This project is a UI and API test automation framework for a simulated telecom billing system.
+This project is a Playwright + Pytest + FastAPI test automation framework for a simulated telecom billing system.
 
-It is built as a learning and portfolio project, but its structure follows common patterns used in real test automation projects:
+It is built as a learning and portfolio project, with a structure that reflects common patterns used in production-style automation repositories:
 
-- API testing
-- UI testing
-- E2E testing
-- Contract/schema testing
-- Page Object Model
-- API Client abstraction
-- Shared Pytest fixtures
+- API testing with reusable API clients
+- UI testing with Page Object Model
+- E2E testing across frontend and backend
+- Contract/schema testing for response validation
+- Shared Pytest fixtures and test data reset
+- FastAPI mock backend with in-memory data
+- Static HTML/CSS/JavaScript frontend
 - GitHub Actions CI
 
-The current application scope focuses on an invoice dashboard. Users can view invoices, search by customer or invoice ID, filter by invoice status, and mark an unpaid invoice as paid.
+The current application covers invoice management, customer and contract lifecycle checks, monthly billing runs, and invoice risk badges.
+
+Current full test suite result:
+
+```text
+68 passed
+```
 
 ---
 
 ## Business Background
 
-The application simulates a small part of a telecom Customer Care and Billing system.
+The application simulates a focused slice of a telecom Customer Care and Billing system.
 
-In a real telecom billing environment, invoices are linked to customers, contracts, billing periods, payment status, and downstream financial processes. This project currently focuses on the invoice and payment-status part of that flow.
+In a real telecom billing environment, invoices are connected to customers, contracts, billing periods, payment status, monthly billing operations, and downstream financial processes. This project models those relationships in a compact mock application designed for automation practice.
 
-Current business entities include:
+Current business entities and concepts include:
 
 - Invoice
 - Customer
 - Contract
+- Billing run
 - Billing period
 - Invoice status
 - Payment status
+- Risk badge
 
 Current invoice statuses:
 
@@ -40,19 +48,72 @@ Current invoice statuses:
 - `Unpaid`
 - `Overdue`
 
+Invoice risk mapping:
+
+| Invoice Status | Risk Badge |
+|---|---|
+| `Paid` | `Low Risk` |
+| `Unpaid` | `Medium Risk` |
+| `Overdue` | `High Risk` |
+| Fallback | `Unknown Risk` |
+
+---
+
+## Implemented Modules
+
+### 1. Invoice Module
+
+- Backend API
+- Frontend invoice dashboard
+- API client
+- Page Object
+- API tests
+- UI tests
+- E2E tests
+- Contract/schema tests
+
+### 2. Customer & Contract Lifecycle Module
+
+- Backend API
+- Frontend customer and contract lifecycle section
+- API clients
+- Page Object
+- API tests
+- UI tests
+- E2E tests
+- Contract/schema tests
+
+### 3. Billing Run Module
+
+- Backend API
+- Billing Run API client
+- API tests
+- Contract/schema tests
+- Billing Operations frontend section
+- UI tests
+- E2E test
+
+### 4. Risk Badge / Status Badge
+
+- Invoice table status badges
+- Invoice table `Risk` column
+- Risk mapping for `Paid`, `Unpaid`, `Overdue`, and fallback statuses
+- UI coverage for low, medium, and high risk values
+
 ---
 
 ## Tech Stack
 
 | Area | Technology |
 |---|---|
+| Language | Python |
 | Test Framework | Pytest |
 | Browser Automation | Playwright for Python |
 | API Testing | Playwright APIRequestContext |
 | Backend Mock App | FastAPI |
 | Frontend Mock App | HTML, CSS, JavaScript |
+| Test Architecture | Page Object Model, API Client abstraction |
 | CI/CD | GitHub Actions |
-| Language | Python |
 
 ---
 
@@ -62,59 +123,57 @@ The test suite is split into four layers.
 
 ### 1. API Tests
 
-API tests validate backend behavior directly.
+API tests validate backend behavior directly through reusable API clients.
 
 They cover:
 
 - Health check
-- Listing invoices
-- Searching invoices
-- Filtering invoices by status
-- Getting invoice details
-- Marking an invoice as paid
-- Handling unknown invoice IDs
+- Listing, searching, filtering, and retrieving invoices
+- Marking invoices as paid
+- Creating and retrieving customers
+- Creating, retrieving, and activating contracts
+- Creating monthly billing runs
+- Preventing duplicate billing-run invoice generation
+- Verifying generated invoice status, billing period, and amount
+- Handling unknown resource IDs
 
 ### 2. UI Tests
 
-UI tests validate user-facing behavior in the billing dashboard.
+UI tests validate user-facing behavior in the browser through Page Objects.
 
 They cover:
 
 - Dashboard loading
 - Invoice table rendering
-- Searching by customer name
-- Searching by invoice ID
-- Filtering by invoice status
+- Searching invoices by customer or invoice ID
+- Filtering invoices by status
 - Marking an unpaid invoice as paid
+- Customer and contract lifecycle UI behavior
+- Billing Operations section loading
+- Running monthly billing from the UI
+- Generated invoices appearing after billing
+- Risk Badge display for paid, unpaid, and overdue invoices
 
 ### 3. E2E Tests
 
-E2E tests validate a complete user flow across frontend and backend.
+E2E tests validate complete workflows across frontend and backend.
 
-Current E2E flow:
+Current E2E flows:
 
-```text
-User marks an unpaid invoice as paid in the UI
-        ↓
-Frontend sends PATCH request to backend
-        ↓
-Backend updates invoice status
-        ↓
-UI shows updated status
-        ↓
-API verification confirms status is Paid
-```
+- Mark an unpaid invoice as paid in the UI and verify the updated invoice through the API.
+- Activate a draft contract in the UI and verify the contract status through the API.
+- Run monthly billing from the UI, verify the billing run through the API, verify generated invoices through the API, and verify generated invoice risk in the UI.
 
-### 4. Contract Tests
+### 4. Contract/Schema Tests
 
-Contract tests validate the API response structure.
+Contract tests validate API response shape and field types.
 
-They check:
+They cover:
 
-- Required invoice fields
-- Field data types
-- Valid invoice status values
-- Invoice list response structure
+- Invoice response fields, field types, and valid statuses
+- Customer response fields, field types, and valid statuses
+- Contract response fields, field types, valid statuses, and customer references
+- Billing Run response fields, field types, valid status, generated invoice IDs, and duplicate-run response shape
 
 ---
 
@@ -122,56 +181,56 @@ They check:
 
 ```text
 telecom-billing-playwright-tests/
-│
-├── app/
-│   ├── frontend/
-│   │   ├── index.html
-│   │   └── app.js
-│   │
-│   └── backend/
-│       ├── __init__.py
-│       ├── main.py
-│       └── data.py
-│
-├── api_clients/
-│   ├── __init__.py
-│   └── invoice_client.py
-│
-├── pages/
-│   ├── __init__.py
-│   └── billing_dashboard_page.py
-│
-├── tests/
-│   ├── api/
-│   │   └── test_invoice_api.py
-│   │
-│   ├── ui/
-│   │   └── test_billing_dashboard_ui.py
-│   │
-│   ├── e2e/
-│   │   └── test_invoice_payment_flow.py
-│   │
-│   └── contract/
-│       └── test_invoice_schema.py
-│
-├── conftest.py
-├── pytest.ini
-├── requirements.txt
-├── README.md
-└── .github/
-    └── workflows/
-        └── ci.yml
+|-- app/
+|   |-- frontend/
+|   |   |-- index.html
+|   |   `-- app.js
+|   `-- backend/
+|       |-- __init__.py
+|       |-- main.py
+|       `-- data.py
+|-- api_clients/
+|   |-- __init__.py
+|   |-- billing_run_client.py
+|   |-- contract_client.py
+|   |-- customer_client.py
+|   `-- invoice_client.py
+|-- pages/
+|   |-- __init__.py
+|   |-- billing_dashboard_page.py
+|   `-- customer_contract_page.py
+|-- tests/
+|   |-- api/
+|   |   |-- test_billing_run_api.py
+|   |   |-- test_customer_contract_api.py
+|   |   `-- test_invoice_api.py
+|   |-- contract/
+|   |   |-- test_billing_run_schema.py
+|   |   |-- test_customer_contract_schema.py
+|   |   `-- test_invoice_schema.py
+|   |-- e2e/
+|   |   |-- test_billing_run_flow.py
+|   |   |-- test_customer_contract_flow.py
+|   |   `-- test_invoice_payment_flow.py
+|   `-- ui/
+|       |-- test_billing_dashboard_ui.py
+|       `-- test_customer_contract_ui.py
+|-- conftest.py
+|-- pytest.ini
+|-- requirements.txt
+|-- README.md
+`-- .github/
+    `-- workflows/
+        `-- ci.yml
 ```
 
 ---
 
 ## Application Under Test
 
-The mock application has two parts.
+The mock application has a FastAPI backend and a static HTML/JavaScript frontend.
 
 ### Backend
-
-The backend is a FastAPI application.
 
 Default URL:
 
@@ -190,10 +249,15 @@ Main endpoints:
 | GET | `/api/invoices?status=Unpaid` | Filter invoices by status |
 | GET | `/api/invoices/{invoice_id}` | Get invoice by ID |
 | PATCH | `/api/invoices/{invoice_id}/pay` | Mark invoice as paid |
+| POST | `/api/customers` | Create a customer |
+| GET | `/api/customers/{customer_id}` | Get customer by ID |
+| POST | `/api/contracts` | Create a draft contract for an existing customer |
+| GET | `/api/contracts/{contract_id}` | Get contract by ID |
+| PATCH | `/api/contracts/{contract_id}/activate` | Activate a contract |
+| POST | `/api/billing-runs` | Run monthly billing for a billing period |
+| GET | `/api/billing-runs/{billing_run_id}` | Get billing run by ID |
 
 ### Frontend
-
-The frontend is a simple HTML/JavaScript dashboard.
 
 Default URL:
 
@@ -201,7 +265,11 @@ Default URL:
 http://localhost:3000
 ```
 
-The frontend calls the backend API and renders invoice data in a table.
+The frontend includes:
+
+- Invoice dashboard with search, status filter, payment action, status badge, and risk badge
+- Customer & Contract Lifecycle section
+- Billing Operations section for monthly billing runs
 
 ---
 
@@ -214,6 +282,12 @@ On Windows Git Bash:
 ```bash
 python -m venv venv
 source venv/Scripts/activate
+```
+
+On Windows PowerShell:
+
+```powershell
+.\venv\Scripts\Activate.ps1
 ```
 
 ### 2. Install dependencies
@@ -315,19 +389,29 @@ Markers are defined in `pytest.ini`.
 
 The backend uses in-memory mock data.
 
-Before tests that depend on a known invoice state, the test suite calls:
+Before tests that depend on a known state, the test suite calls:
 
 ```text
 POST /api/test/reset
 ```
 
-This resets the invoices to their initial state:
+This resets invoices, customers, contracts, and billing runs.
 
-| Invoice | Customer | Amount | Status |
-|---|---|---:|---|
-| INV-1001 | Alice Mobile | 89.00 | Paid |
-| INV-1002 | Beta Telecom | 249.00 | Unpaid |
-| INV-1003 | Delta GmbH | 399.00 | Overdue |
+Initial invoice data:
+
+| Invoice | Customer | Contract | Amount | Status | Billing Period |
+|---|---|---|---:|---|---|
+| `INV-1001` | Alice Mobile | `CON-5001` | 89.00 | Paid | `2026-05` |
+| `INV-1002` | Beta Telecom | `CON-5002` | 249.00 | Unpaid | `2026-05` |
+| `INV-1003` | Delta GmbH | `CON-5003` | 399.00 | Overdue | `2026-05` |
+
+Initial active contracts:
+
+| Contract | Customer | Plan | Status |
+|---|---|---|---|
+| `CON-5001` | `CUST-001` | 5G Unlimited | Active |
+| `CON-5002` | `CUST-002` | Fiber Business | Active |
+| `CON-5003` | `CUST-003` | Business Mobile | Active |
 
 This keeps tests independent and repeatable.
 
@@ -335,45 +419,50 @@ This keeps tests independent and repeatable.
 
 ## Page Object Model
 
-UI locators and common UI actions are encapsulated in:
+UI locators and common UI actions are encapsulated in Page Objects.
 
-```text
-pages/billing_dashboard_page.py
-```
+Current Page Objects:
+
+- `pages/billing_dashboard_page.py`
+- `pages/customer_contract_page.py`
 
 Example responsibilities:
 
-- Open dashboard
-- Search invoice
-- Filter by status
+- Open the dashboard
+- Search and filter invoices
 - Locate invoice rows
-- Mark invoice as paid
-- Verify invoice status
-- Verify success message
+- Mark an invoice as paid
+- Verify invoice status and risk
+- Run monthly billing from the UI
+- Verify billing success messages
+- Search customers and validate related contracts
+- Activate draft contracts
 
-This keeps UI test files focused on test intent instead of locator details.
+This keeps UI and E2E test files focused on test intent instead of locator details.
 
 ---
 
 ## API Client Abstraction
 
-API calls are encapsulated in:
+API calls are encapsulated in reusable clients.
 
-```text
-api_clients/invoice_client.py
-```
+Current API clients:
+
+- `api_clients/invoice_client.py`
+- `api_clients/customer_client.py`
+- `api_clients/contract_client.py`
+- `api_clients/billing_run_client.py`
 
 Example responsibilities:
 
 - Health check
 - Reset test data
-- List invoices
-- Search invoices
-- Filter invoices
-- Get invoice by ID
-- Mark invoice as paid
+- List, search, filter, retrieve, and pay invoices
+- Create and retrieve customers
+- Create, retrieve, and activate contracts
+- Create and retrieve billing runs
 
-This keeps API tests readable and reduces duplicated endpoint paths.
+This keeps API and E2E tests readable and reduces duplicated endpoint paths.
 
 ---
 
@@ -390,8 +479,11 @@ Current shared fixtures include:
 - `frontend_base_url`
 - `api_base_url`
 - `api_context`
-- `invoice_client`
 - `reset_test_data`
+- `invoice_client`
+- `customer_client`
+- `contract_client`
+- `billing_run_client`
 
 ---
 
@@ -421,85 +513,94 @@ Workflow file:
 
 ## Current Test Coverage
 
-### API
+### API Coverage
 
 - Health check returns OK
-- List invoices returns default invoices
-- Search invoice by customer name
-- Filter invoices by status
-- Get invoice by ID
-- Unknown invoice returns 404
-- Mark invoice as paid
-- Mark unknown invoice as paid returns 404
+- Invoice list, search, filter, detail, payment, and 404 behavior
+- Customer creation, retrieval, and 404 behavior
+- Contract creation, retrieval, activation, and 404 behavior
+- Reset endpoint restores invoices, customers, contracts, and billing runs
+- Billing run creation
+- Billing run schema fields in API response
+- Active contracts generate invoices
+- Draft contracts are ignored by billing runs
+- Generated invoices are unpaid
+- Generated invoices use the requested billing period
+- Generated invoice amounts match plan prices
+- Duplicate billing runs do not create duplicate invoices
+- Billing run retrieval and 404 behavior
 
-### UI
+### UI Coverage
 
-- Dashboard loads invoice table
-- Search by customer name
-- Search by invoice ID
-- Filter unpaid invoices
-- Filter paid invoices
-- Filter overdue invoices
+- Invoice dashboard loads invoice table
+- Search by customer name and invoice ID
+- Filter by invoice status
 - Mark unpaid invoice as paid
+- Status badge behavior
+- Risk Badge values for paid, unpaid, and overdue invoices
+- Customer & Contract Lifecycle section loads
+- Search existing and unknown customers
+- Related contract display
+- Draft contract activation from UI
+- Billing Operations section loads
+- Monthly billing can be run from UI
+- Generated invoices appear in the table after billing
+- Generated invoices show `Medium Risk`
 
-### E2E
+### E2E Coverage
 
-- Mark unpaid invoice as paid from UI and verify backend status through API
+- Mark invoice as paid from UI and verify invoice status through API
+- Activate draft contract from UI and verify contract status through API
+- Run monthly billing from UI, verify billing run through API, verify generated invoices through API, and verify generated invoice risk in UI
 
-### Contract
+### Contract/Schema Coverage
 
-- Invoice response contains required fields
-- Invoice response field types are valid
-- Invoice status has valid value
-- Invoice list contains invoice objects with required fields
+- Invoice response required fields and field types
+- Invoice valid status values
+- Invoice list object structure
+- Customer response required fields, field types, and valid status values
+- Contract response required fields, field types, valid status values, and customer references
+- Billing Run response required fields and field types
+- Billing Run valid status value
+- Billing Run generated invoice ID structure
+- Generated invoice IDs can be fetched through the invoice API
+- Duplicate Billing Run response shape
 
 ---
 
 ## Roadmap
 
-Planned extensions:
+Planned future extensions:
 
-### Customer & Contract Lifecycle
+### Partial Payment
 
-- Create customer
-- Search customer
-- Create contract for customer
-- Activate contract
-- Terminate contract
-- Verify contract lifecycle status
+- Support partial payment against an invoice
+- Keep invoice open until fully paid
+- Validate remaining balance
 
-### Billing Run
+### Dunning
 
-- Generate monthly invoice
-- Validate invoice amount
-- Prevent duplicate billing run
-- Verify billing period
+- Trigger dunning for overdue invoices
+- Track dunning level
+- Surface dunning state in customer account views
 
-### Payment & Dunning
+### Reporting / GL CSV Export
 
-- Full payment closes invoice
-- Partial payment keeps invoice open
-- Overdue invoice triggers dunning
-- Dunning level is visible in customer account
-
-### Reporting & Export
-
-- Download invoice PDF
-- Generate monthly GL report
-- Export GL report as CSV
-- Validate report totals
+- Generate monthly GL reports
+- Export GL reports as CSV
+- Validate report totals and row-level data
 
 ### CI/CD Enhancements
 
 - Separate API, UI, E2E, and contract jobs
-- JUnit test report
-- Scheduled nightly regression run
-- Failure trace and screenshot artifacts
+- JUnit test report publishing
+- Scheduled nightly regression runs
+- Failure trace, screenshot, and video artifacts
 
 ---
 
 ## Project Goal
 
-The goal of this project is to demonstrate a realistic test automation setup for a business-oriented telecom billing scenario.
+The goal of this project is to demonstrate a realistic, maintainable test automation setup for a business-oriented telecom billing scenario.
 
-The focus is not only on writing UI tests, but also on building a maintainable testing structure with clear test layers, reusable abstractions, stable test data, and CI execution.
+The focus is not only on writing UI tests, but also on building a layered automation framework with clear test responsibilities, reusable abstractions, stable test data, backend/frontend coverage, and CI execution.
