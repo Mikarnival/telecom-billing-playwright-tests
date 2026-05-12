@@ -12,7 +12,7 @@ const customerContractMessage = document.querySelector("#customer-contract-messa
 let customerSearchRequestId = 0;
 
 function formatAmount(amount) {
-  return `$${amount.toFixed(2)}`;
+  return `€${amount.toFixed(2)}`;
 }
 
 function setMessage(text, type = "") {
