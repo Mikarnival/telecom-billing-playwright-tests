@@ -80,9 +80,19 @@ INITIAL_CONTRACTS: list[dict[str, Any]] = [
 ]
 
 
+INITIAL_BILLING_RUNS: list[dict[str, Any]] = []
+
+PLAN_AMOUNTS: dict[str, float] = {
+    "5G Unlimited": 89.00,
+    "Fiber Business": 249.00,
+    "Business Mobile": 399.00,
+}
+
+
 invoices: list[dict[str, Any]] = deepcopy(INITIAL_INVOICES)
 customers: list[dict[str, Any]] = deepcopy(INITIAL_CUSTOMERS)
 contracts: list[dict[str, Any]] = deepcopy(INITIAL_CONTRACTS)
+billing_runs: list[dict[str, Any]] = deepcopy(INITIAL_BILLING_RUNS)
 
 
 def reset_data() -> None:
@@ -90,10 +100,11 @@ def reset_data() -> None:
     Reset mock data to its initial state.
     Useful for tests, so each test starts from the same data.
     """
-    global invoices, customers, contracts
+    global invoices, customers, contracts, billing_runs
     invoices = deepcopy(INITIAL_INVOICES)
     customers = deepcopy(INITIAL_CUSTOMERS)
     contracts = deepcopy(INITIAL_CONTRACTS)
+    billing_runs = deepcopy(INITIAL_BILLING_RUNS)
 
 
 def get_all_invoices() -> list[dict[str, Any]]:
@@ -192,3 +203,76 @@ def activate_contract(contract_id: str) -> dict[str, Any] | None:
 
     contract["status"] = "Active"
     return contract
+
+
+def get_billing_run_by_id(billing_run_id: str) -> dict[str, Any] | None:
+    for billing_run in billing_runs:
+        if billing_run["billing_run_id"] == billing_run_id:
+            return billing_run
+    return None
+
+
+def get_billing_run_by_period(billing_period: str) -> dict[str, Any] | None:
+    billing_run_id = f"BR-{billing_period}"
+    return get_billing_run_by_id(billing_run_id)
+
+
+def create_billing_run(billing_period: str) -> dict[str, Any]:
+    existing_billing_run = get_billing_run_by_period(billing_period)
+
+    if existing_billing_run is not None:
+        return {
+            **existing_billing_run,
+            "message": (
+                f"Billing run for {billing_period} already exists; "
+                "no duplicate invoices created."
+            ),
+        }
+
+    generated_invoice_ids: list[str] = []
+
+    for contract in contracts:
+        if contract["status"] != "Active":
+            continue
+
+        amount = PLAN_AMOUNTS.get(contract["plan"])
+        if amount is None:
+            continue
+
+        invoice_id = f"INV-{billing_period.replace('-', '')}-{contract['contract_id']}"
+        duplicate_invoice = any(
+            invoice["contract_id"] == contract["contract_id"]
+            and invoice["billing_period"] == billing_period
+            for invoice in invoices
+        )
+
+        if duplicate_invoice:
+            continue
+
+        customer = get_customer_by_id(contract["customer_id"])
+        if customer is None:
+            continue
+
+        invoice = {
+            "invoice_id": invoice_id,
+            "customer_id": customer["customer_id"],
+            "customer_name": customer["customer_name"],
+            "contract_id": contract["contract_id"],
+            "plan": contract["plan"],
+            "amount": amount,
+            "status": "Unpaid",
+            "billing_period": billing_period,
+        }
+
+        invoices.append(invoice)
+        generated_invoice_ids.append(invoice_id)
+
+    billing_run = {
+        "billing_run_id": f"BR-{billing_period}",
+        "billing_period": billing_period,
+        "generated_invoice_ids": generated_invoice_ids,
+        "status": "Completed",
+    }
+
+    billing_runs.append(billing_run)
+    return billing_run

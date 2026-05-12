@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.backend.data import (
     activate_contract,
+    create_billing_run,
     create_contract,
     create_customer,
     get_all_invoices,
+    get_billing_run_by_id,
     get_contract_by_id,
     get_customer_by_id,
     get_invoice_by_id,
@@ -136,3 +138,21 @@ def activate_existing_contract(contract_id: str) -> dict:
         )
 
     return contract
+
+
+@app.post("/api/billing-runs")
+def add_billing_run(billing_run_data: dict) -> dict:
+    return create_billing_run(billing_run_data["billing_period"])
+
+
+@app.get("/api/billing-runs/{billing_run_id}")
+def get_billing_run(billing_run_id: str) -> dict:
+    billing_run = get_billing_run_by_id(billing_run_id)
+
+    if billing_run is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Billing run {billing_run_id} not found",
+        )
+
+    return billing_run
