@@ -21,15 +21,15 @@ def test_dashboard_loads_invoice_table(
     dashboard.expect_invoice_visible("INV-1003")
 
     dashboard.expect_invoice_contains("INV-1001", "Alice Mobile")
-    dashboard.expect_invoice_contains("INV-1001", "$89.00")
+    dashboard.expect_invoice_contains("INV-1001", "€89.00")
     dashboard.expect_invoice_contains("INV-1001", "Paid")
 
     dashboard.expect_invoice_contains("INV-1002", "Beta Telecom")
-    dashboard.expect_invoice_contains("INV-1002", "$249.00")
+    dashboard.expect_invoice_contains("INV-1002", "€249.00")
     dashboard.expect_invoice_contains("INV-1002", "Unpaid")
 
     dashboard.expect_invoice_contains("INV-1003", "Delta GmbH")
-    dashboard.expect_invoice_contains("INV-1003", "$399.00")
+    dashboard.expect_invoice_contains("INV-1003", "€399.00")
     dashboard.expect_invoice_contains("INV-1003", "Overdue")
 
 
@@ -53,7 +53,7 @@ def test_search_customer_shows_matching_invoice_only(
 
     dashboard.expect_invoice_contains("INV-1002", "Beta Telecom")
     dashboard.expect_invoice_contains("INV-1002", "Fiber Business")
-    dashboard.expect_invoice_contains("INV-1002", "$249.00")
+    dashboard.expect_invoice_contains("INV-1002", "€249.00")
     dashboard.expect_invoice_contains("INV-1002", "Unpaid")
 
 
@@ -76,7 +76,7 @@ def test_search_invoice_by_invoice_id(
 
     dashboard.expect_invoice_contains("INV-1003", "Delta GmbH")
     dashboard.expect_invoice_contains("INV-1003", "Business Mobile")
-    dashboard.expect_invoice_contains("INV-1003", "$399.00")
+    dashboard.expect_invoice_contains("INV-1003", "€399.00")
     dashboard.expect_invoice_contains("INV-1003", "Overdue")
 
 
