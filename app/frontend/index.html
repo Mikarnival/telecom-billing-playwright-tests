@@ -170,6 +170,7 @@
             <th>Plan</th>
             <th>Amount</th>
             <th>Status</th>
+            <th>Risk</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -223,6 +224,26 @@
         </table>
 
         <p id="customer-contract-message" class="message" role="status"></p>
+      </section>
+
+      <section aria-labelledby="billing-operations-heading">
+        <h2 id="billing-operations-heading">Billing Operations</h2>
+
+        <section class="controls" aria-label="Billing operations">
+          <div>
+            <label for="billing-period">Billing period</label>
+            <input
+              id="billing-period"
+              value="2026-07"
+            />
+          </div>
+
+          <button id="run-billing-button" type="button">
+            Run Monthly Billing
+          </button>
+        </section>
+
+        <p id="billing-run-message" class="message" role="status"></p>
       </section>
     </main>
 

@@ -45,6 +45,9 @@ class BillingDashboardPage:
     def expect_invoice_status(self, invoice_id: str, status: str) -> None:
         expect(self.invoice_row(invoice_id)).to_contain_text(status)
 
+    def expect_invoice_risk(self, invoice_id: str, risk: str) -> None:
+        expect(self.invoice_row(invoice_id)).to_contain_text(risk)
+
     def mark_invoice_as_paid(self, invoice_id: str) -> None:
         self.invoice_row(invoice_id).get_by_role(
             "button",
@@ -63,3 +66,21 @@ class BillingDashboardPage:
                 name="Mark as Paid",
             )
         ).to_be_disabled()
+
+    def expect_billing_operations_visible(self) -> None:
+        expect(
+            self.page.get_by_role("heading", name="Billing Operations")
+        ).to_be_visible()
+        expect(self.page.get_by_label("Billing period")).to_be_visible()
+        expect(
+            self.page.get_by_role("button", name="Run Monthly Billing")
+        ).to_be_visible()
+
+    def run_monthly_billing(self, billing_period: str) -> None:
+        self.page.get_by_label("Billing period").fill(billing_period)
+        self.page.get_by_role("button", name="Run Monthly Billing").click()
+
+    def expect_billing_success_message(self, billing_run_id: str) -> None:
+        expect(
+            self.page.get_by_text(f"Billing run {billing_run_id} completed")
+        ).to_be_visible()

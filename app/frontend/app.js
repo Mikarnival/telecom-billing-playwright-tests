@@ -9,6 +9,9 @@ const lifecycleCustomerSearch = document.querySelector("#lifecycle-customer-sear
 const customerTableBody = document.querySelector("#customer-table-body");
 const contractTableBody = document.querySelector("#contract-table-body");
 const customerContractMessage = document.querySelector("#customer-contract-message");
+const billingPeriodInput = document.querySelector("#billing-period");
+const runBillingButton = document.querySelector("#run-billing-button");
+const billingRunMessage = document.querySelector("#billing-run-message");
 let customerSearchRequestId = 0;
 
 function formatAmount(amount) {
@@ -23,6 +26,27 @@ function setMessage(text, type = "") {
 function setCustomerContractMessage(text, type = "") {
   customerContractMessage.textContent = text;
   customerContractMessage.className = `message ${type}`;
+}
+
+function setBillingRunMessage(text, type = "") {
+  billingRunMessage.textContent = text;
+  billingRunMessage.className = `message ${type}`;
+}
+
+function getInvoiceRisk(status) {
+  if (status === "Paid") {
+    return "Low Risk";
+  }
+
+  if (status === "Unpaid") {
+    return "Medium Risk";
+  }
+
+  if (status === "Overdue") {
+    return "High Risk";
+  }
+
+  return "Unknown Risk";
 }
 
 function buildQueryParams() {
@@ -48,7 +72,7 @@ function renderInvoices(invoices) {
   if (invoices.length === 0) {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td colspan="8">No invoices found</td>
+      <td colspan="9">No invoices found</td>
     `;
     tableBody.appendChild(row);
     return;
@@ -70,6 +94,7 @@ function renderInvoices(invoices) {
       <td>
         <span class="status ${invoice.status}">${invoice.status}</span>
       </td>
+      <td>${getInvoiceRisk(invoice.status)}</td>
       <td>
         <button
           type="button"
@@ -297,6 +322,43 @@ async function activateContract(contractId) {
   }
 }
 
+async function runMonthlyBilling() {
+  const billingPeriod = billingPeriodInput.value.trim();
+
+  if (!billingPeriod) {
+    setBillingRunMessage("Billing period is required", "error");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/billing-runs`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        billing_period: billingPeriod,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    const billingRun = await response.json();
+
+    searchInput.value = "";
+    statusFilter.value = "";
+    await loadInvoices();
+    setBillingRunMessage(
+      `Billing run ${billingRun.billing_run_id} completed`,
+      "success"
+    );
+  } catch (error) {
+    setBillingRunMessage("Could not run monthly billing", "error");
+  }
+}
+
 searchInput.addEventListener("input", () => {
   loadInvoices();
 });
@@ -339,6 +401,10 @@ contractTableBody.addEventListener("click", (event) => {
 
   const contractId = button.dataset.contractId;
   activateContract(contractId);
+});
+
+runBillingButton.addEventListener("click", () => {
+  runMonthlyBilling();
 });
 
 loadInvoices();
