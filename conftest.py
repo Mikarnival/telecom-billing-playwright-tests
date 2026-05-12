@@ -3,6 +3,7 @@ from collections.abc import Generator
 import pytest
 from playwright.sync_api import APIRequestContext, Playwright
 
+from api_clients.billing_run_client import BillingRunClient
 from api_clients.contract_client import ContractClient
 from api_clients.customer_client import CustomerClient
 from api_clients.invoice_client import InvoiceClient
@@ -51,3 +52,8 @@ def customer_client(api_context: APIRequestContext) -> CustomerClient:
 @pytest.fixture
 def contract_client(api_context: APIRequestContext) -> ContractClient:
     return ContractClient(api_context)
+
+
+@pytest.fixture
+def billing_run_client(api_context: APIRequestContext) -> BillingRunClient:
+    return BillingRunClient(api_context)
