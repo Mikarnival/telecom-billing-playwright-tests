@@ -326,6 +326,46 @@ http://localhost:3000
 
 ---
 
+## MCP Server: AI-Assisted Read-Only Invoice Lookup
+
+This project includes a small standalone MCP server for AI-assisted invoice lookup.
+
+The MCP server exposes exactly one tool:
+
+```text
+get_invoice(invoice_id)
+```
+
+The tool is read-only. It calls the existing FastAPI backend endpoint `GET /api/invoices/{invoice_id}` and returns the invoice response as structured JSON data. It does not modify data, run tests, execute shell commands, create billing runs, or require any GitHub token.
+
+Start the FastAPI backend first:
+
+```bash
+uvicorn app.backend.main:app --reload --port 8000
+```
+
+Start the MCP server in a second terminal:
+
+```bash
+python -m mcp_server.server
+```
+
+MCP endpoint:
+
+```text
+http://localhost:8001/mcp
+```
+
+Example tool invocation:
+
+```text
+get_invoice(invoice_id="INV-1002")
+```
+
+The response contains the `INV-1002` invoice data from the backend, or a structured error if the invoice is unknown or the backend is unavailable.
+
+---
+
 ## Run Tests Locally
 
 Make sure both backend and frontend are running before executing UI or E2E tests.

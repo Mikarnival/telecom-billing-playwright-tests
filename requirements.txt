@@ -10,6 +10,7 @@ greenlet==3.5.0
 h11==0.16.0
 idna==3.13
 iniconfig==2.3.0
+mcp[cli]
 packaging==26.2
 playwright==1.59.0
 pluggy==1.6.0
