@@ -7,11 +7,11 @@ from pages.billing_dashboard_page import BillingDashboardPage
 @pytest.mark.ui
 @pytest.mark.smoke
 def test_dashboard_loads_invoice_table(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -36,11 +36,11 @@ def test_dashboard_loads_invoice_table(
 @pytest.mark.ui
 @pytest.mark.smoke
 def test_search_customer_shows_matching_invoice_only(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -59,11 +59,11 @@ def test_search_customer_shows_matching_invoice_only(
 
 @pytest.mark.ui
 def test_search_invoice_by_invoice_id(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -83,11 +83,11 @@ def test_search_invoice_by_invoice_id(
 @pytest.mark.ui
 @pytest.mark.smoke
 def test_filter_unpaid_invoices(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -104,11 +104,11 @@ def test_filter_unpaid_invoices(
 
 @pytest.mark.ui
 def test_filter_paid_invoices(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -125,11 +125,11 @@ def test_filter_paid_invoices(
 
 @pytest.mark.ui
 def test_filter_overdue_invoices(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -147,11 +147,11 @@ def test_filter_overdue_invoices(
 @pytest.mark.ui
 @pytest.mark.smoke
 def test_user_can_mark_unpaid_invoice_as_paid(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -167,11 +167,11 @@ def test_user_can_mark_unpaid_invoice_as_paid(
 
 @pytest.mark.ui
 def test_paid_invoice_shows_low_risk(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -181,11 +181,11 @@ def test_paid_invoice_shows_low_risk(
 
 @pytest.mark.ui
 def test_unpaid_invoice_shows_medium_risk(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -195,11 +195,11 @@ def test_unpaid_invoice_shows_medium_risk(
 
 @pytest.mark.ui
 def test_overdue_invoice_shows_high_risk(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -209,11 +209,11 @@ def test_overdue_invoice_shows_high_risk(
 
 @pytest.mark.ui
 def test_billing_operations_section_loads(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -223,11 +223,11 @@ def test_billing_operations_section_loads(
 
 @pytest.mark.ui
 def test_user_can_run_monthly_billing_from_ui(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()
@@ -239,11 +239,11 @@ def test_user_can_run_monthly_billing_from_ui(
 
 @pytest.mark.ui
 def test_generated_invoice_appears_with_medium_risk_after_billing_run(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    dashboard = BillingDashboardPage(page, frontend_base_url)
+    dashboard = BillingDashboardPage(configured_page, frontend_base_url)
 
     dashboard.open()
     dashboard.expect_loaded()

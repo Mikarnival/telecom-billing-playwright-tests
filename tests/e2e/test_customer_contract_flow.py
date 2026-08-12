@@ -11,7 +11,7 @@ from pages.customer_contract_page import CustomerContractPage
 @pytest.mark.e2e
 @pytest.mark.smoke
 def test_activate_draft_contract_from_ui_and_verify_by_api(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     customer_client: CustomerClient,
     contract_client: ContractClient,
@@ -51,12 +51,12 @@ def test_activate_draft_contract_from_ui_and_verify_by_api(
             ),
         )
 
-    page.route(
+    configured_page.route(
         "**/api/invoices?query=CUST-300",
         route_customer_invoice_search,
     )
 
-    lifecycle = CustomerContractPage(page, frontend_base_url)
+    lifecycle = CustomerContractPage(configured_page, frontend_base_url)
 
     lifecycle.open()
     lifecycle.expect_loaded()

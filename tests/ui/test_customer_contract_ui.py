@@ -6,11 +6,11 @@ from pages.customer_contract_page import CustomerContractPage
 
 @pytest.mark.ui
 def test_customer_contract_section_loads(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    lifecycle = CustomerContractPage(page, frontend_base_url)
+    lifecycle = CustomerContractPage(configured_page, frontend_base_url)
 
     lifecycle.open()
     lifecycle.expect_loaded()
@@ -19,11 +19,11 @@ def test_customer_contract_section_loads(
 
 @pytest.mark.ui
 def test_search_existing_customer_by_customer_id(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    lifecycle = CustomerContractPage(page, frontend_base_url)
+    lifecycle = CustomerContractPage(configured_page, frontend_base_url)
 
     lifecycle.open()
     lifecycle.expect_loaded()
@@ -41,11 +41,11 @@ def test_search_existing_customer_by_customer_id(
 
 @pytest.mark.ui
 def test_search_unknown_customer_shows_no_customer_found(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    lifecycle = CustomerContractPage(page, frontend_base_url)
+    lifecycle = CustomerContractPage(configured_page, frontend_base_url)
 
     lifecycle.open()
     lifecycle.expect_loaded()
@@ -57,11 +57,11 @@ def test_search_unknown_customer_shows_no_customer_found(
 
 @pytest.mark.ui
 def test_existing_customer_shows_related_contract(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    lifecycle = CustomerContractPage(page, frontend_base_url)
+    lifecycle = CustomerContractPage(configured_page, frontend_base_url)
 
     lifecycle.open()
     lifecycle.expect_loaded()
@@ -77,11 +77,11 @@ def test_existing_customer_shows_related_contract(
 
 @pytest.mark.ui
 def test_draft_contract_can_be_activated_from_ui(
-    page: Page,
+    configured_page: Page,
     frontend_base_url: str,
     reset_test_data: None,
 ) -> None:
-    page.request.post(
+    configured_page.request.post(
         "http://localhost:8000/api/contracts",
         data={
             "contract_id": "CON-9005",
@@ -102,12 +102,12 @@ def test_draft_contract_can_be_activated_from_ui(
             ),
         )
 
-    page.route(
+    configured_page.route(
         "**/api/invoices?query=CUST-002",
         route_customer_invoice_search,
     )
 
-    lifecycle = CustomerContractPage(page, frontend_base_url)
+    lifecycle = CustomerContractPage(configured_page, frontend_base_url)
 
     lifecycle.open()
     lifecycle.expect_loaded()
