@@ -30,3 +30,4 @@ typing_extensions==4.15.0
 urllib3==2.7.0
 uvicorn==0.46.0
 PyYAML==6.0.3
+selenium==4.48.0

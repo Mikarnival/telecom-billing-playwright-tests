@@ -4,6 +4,8 @@ from api_clients.billing_run_client import BillingRunClient
 from api_clients.contract_client import ContractClient
 from api_clients.invoice_client import InvoiceClient
 
+from playwright.sync_api import APIRequestContext
+
 
 @pytest.mark.api
 def test_create_billing_run_returns_completed_status(
@@ -203,3 +205,77 @@ def test_draft_contract_is_ignored_by_billing_run(
 
     assert "INV-202606-CON-9001" not in billing_run["generated_invoice_ids"]
     assert draft_contract_invoices == []
+
+
+@pytest.mark.api
+@pytest.mark.parametrize(
+    "invalid_billing_period",
+    [
+        "2026-13",
+        "2026-00",
+        "2026-1",
+        "abc",
+        "",
+    ],
+)
+def test_create_billing_run_rejects_invalid_billing_period(
+    billing_run_client: BillingRunClient,
+    reset_test_data: None,
+    invalid_billing_period: str,
+) -> None:
+    response = billing_run_client.create_billing_run(
+        invalid_billing_period
+    )
+
+    assert response.status == 400
+
+    body = response.json()
+
+    assert body["detail"] == (
+        "Invalid billing period. Expected format: YYYY-MM"
+    )
+
+
+@pytest.mark.api
+def test_create_billing_run_rejects_missing_billing_period(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
+    response = api_context.post(
+        "/api/billing-runs",
+        data={},
+    )
+
+    assert response.status == 422
+
+
+@pytest.mark.api
+def test_create_billing_run_rejects_null_billing_period(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
+    response = api_context.post(
+        "/api/billing-runs",
+        data={
+            "billing_period": None,
+        },
+    )
+
+    assert response.status == 422
+
+
+@pytest.mark.api
+def test_create_billing_run_rejects_non_string_billing_period(
+    api_context: APIRequestContext,
+    reset_test_data: None,
+) -> None:
+    response = api_context.post(
+        "/api/billing-runs",
+        data={
+            "billing_period": 202609,
+        },
+    )
+
+    assert response.status == 422
+
+

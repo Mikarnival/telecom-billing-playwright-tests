@@ -1,5 +1,9 @@
+import re
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+
+from pydantic import BaseModel, StrictStr
 
 from app.backend.data import (
     activate_contract,
@@ -33,6 +37,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class BillingRunRequest(BaseModel):
+    billing_period: StrictStr
 
 
 @app.get("/health")
@@ -140,9 +148,28 @@ def activate_existing_contract(contract_id: str) -> dict:
     return contract
 
 
+def is_valid_billing_period(billing_period: str) -> bool:
+    match = re.fullmatch(r"(\d{4})-(\d{2})", billing_period)
+
+    if match is None:
+        return False
+
+    month = int(match.group(2))
+
+    return 1 <= month <= 12
+
+
 @app.post("/api/billing-runs")
-def add_billing_run(billing_run_data: dict) -> dict:
-    return create_billing_run(billing_run_data["billing_period"])
+def add_billing_run(billing_run_data: BillingRunRequest) -> dict:
+    billing_period = billing_run_data.billing_period
+
+    if not is_valid_billing_period(billing_period):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid billing period. Expected format: YYYY-MM",
+        )
+
+    return create_billing_run(billing_period)
 
 
 @app.get("/api/billing-runs/{billing_run_id}")
