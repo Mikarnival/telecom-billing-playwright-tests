@@ -1,5 +1,7 @@
+import os
 import pytest
 
+from requests import options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -10,7 +12,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 def test_dashboard_loads_in_chrome(
     frontend_base_url: str,
 ) -> None:
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+
+    if os.getenv("CI"):
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(options=options)
 
     try:
         driver.get(frontend_base_url)
@@ -33,7 +42,14 @@ def test_dashboard_loads_in_chrome(
 def test_invoice_search_works_in_chrome(
     frontend_base_url: str,
 ) -> None:
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+
+    if os.getenv("CI"):
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(options=options)
 
     try:
         driver.get(frontend_base_url)

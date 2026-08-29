@@ -239,3 +239,60 @@ jobs:
             test-results/
             playwright-report/
           if-no-files-found: ignore
+  selenium-smokes:
+    name: Selenium Compatibility Smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Chrome version
+        run: |
+          google-chrome --version    
+
+      - name: Start backend
+        run: |
+          uvicorn app.backend.main:app --host 0.0.0.0 --port 8000 &
+
+      - name: Wait for backend
+        run: |
+          curl --retry 10 \
+            --retry-delay 2 \
+            --retry-connrefused \
+            http://localhost:8000/health
+
+      - name: Start frontend
+        run: |
+          python -m http.server 3000 --directory app/frontend &
+        
+      - name: Wait for frontend
+        run: |  
+          curl --retry 10 \
+            --retry-delay 2 \
+            --retry-connrefused \
+            http://localhost:3000
+
+      - name: Run Selenium smoke tests
+        run: |
+          pytest -m selenium -v \
+            --junitxml=test-results/selenium-results.xml
+
+      - name: Upload Selenium test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-test-results
+          path: test-results/
+          if-no-files-found: ignore
