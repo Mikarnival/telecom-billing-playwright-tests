@@ -1,79 +1,23 @@
-import os
 import pytest
 
-from requests import options
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from pages.selenium.billing_dashboard_page import BillingDashboardPage
 
 
 @pytest.mark.selenium
 def test_dashboard_loads_in_chrome(
-    frontend_base_url: str,
+    selenium_billing_dashboard_page: BillingDashboardPage,
 ) -> None:
-    options = webdriver.ChromeOptions()
+    selenium_billing_dashboard_page.open()
 
-    if os.getenv("CI"):
-        options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-
-    driver = webdriver.Chrome(options=options)
-
-    try:
-        driver.get(frontend_base_url)
-
-        wait = WebDriverWait(driver, 10)
-
-        invoice_table = wait.until(
-            EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, 'table[aria-label="Invoices"]')
-            )
-        )
-
-        assert invoice_table.is_displayed()
-
-    finally:
-        driver.quit()
+    selenium_billing_dashboard_page.expect_loaded()
 
 
 @pytest.mark.selenium
 def test_invoice_search_works_in_chrome(
-    frontend_base_url: str,
+    selenium_billing_dashboard_page: BillingDashboardPage,
 ) -> None:
-    options = webdriver.ChromeOptions()
+    selenium_billing_dashboard_page.open()
 
-    if os.getenv("CI"):
-        options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+    selenium_billing_dashboard_page.search_invoice("CUST-001")
 
-    driver = webdriver.Chrome(options=options)
-
-    try:
-        driver.get(frontend_base_url)
-
-        wait = WebDriverWait(driver, 10)
-
-        search_input = wait.until(
-            EC.visibility_of_element_located(
-                (By.ID, "customer-search")
-            )
-        )
-
-        search_input.send_keys("CUST-001")
-
-        matching_row = wait.until(
-            EC.visibility_of_element_located(
-                (
-                    By.CSS_SELECTOR,
-                    '[data-testid="invoice-row-INV-1001"]',
-                )
-            )
-        )
-
-        assert matching_row.is_displayed()
-
-    finally:
-        driver.quit()
+    selenium_billing_dashboard_page.expect_invoice_visible("INV-1001")
