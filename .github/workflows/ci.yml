@@ -30,9 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Start backend
+      - name: Start backend with Docker Compose
         run: |
-          uvicorn app.backend.main:app --host 0.0.0.0 --port 8000 &
+          docker compose up -d --build backend
 
       - name: Wait for backend
         run: |
@@ -53,7 +53,16 @@ jobs:
           name: api-test-results
           path: test-results/
           if-no-files-found: ignore
+      
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: |
+          docker compose logs
 
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose down
 
   contract-tests:
     name: Contract Tests
@@ -74,9 +83,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Start backend
+      - name: Start backend with Docker Compose
         run: |
-          uvicorn app.backend.main:app --host 0.0.0.0 --port 8000 &
+          docker compose up -d --build backend
 
       - name: Wait for backend
         run: |
@@ -98,6 +107,15 @@ jobs:
           path: test-results/
           if-no-files-found: ignore
 
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose down
 
   ui-tests:
     name: Playwright UI Tests
@@ -122,9 +140,9 @@ jobs:
         run: |
           playwright install --with-deps chromium
 
-      - name: Start backend
+      - name: Start application with Docker Compose
         run: |
-          uvicorn app.backend.main:app --host 0.0.0.0 --port 8000 &
+          docker compose up -d --build
 
       - name: Wait for backend
         run: |
@@ -132,10 +150,6 @@ jobs:
             --retry-delay 2 \
             --retry-connrefused \
             http://localhost:8000/health
-
-      - name: Start frontend
-        run: |
-          python -m http.server 3000 --directory app/frontend &
 
       - name: Wait for frontend
         run: |
@@ -169,6 +183,15 @@ jobs:
             playwright-report/
           if-no-files-found: ignore
 
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose down
 
   e2e-tests:
     name: End-to-End Tests
@@ -193,9 +216,9 @@ jobs:
         run: |
           playwright install --with-deps chromium
 
-      - name: Start backend
+      - name: Start application with Docker Compose
         run: |
-          uvicorn app.backend.main:app --host 0.0.0.0 --port 8000 &
+          docker compose up -d --build
 
       - name: Wait for backend
         run: |
@@ -203,10 +226,6 @@ jobs:
             --retry-delay 2 \
             --retry-connrefused \
             http://localhost:8000/health
-
-      - name: Start frontend
-        run: |
-          python -m http.server 3000 --directory app/frontend &
 
       - name: Wait for frontend
         run: |
@@ -239,6 +258,17 @@ jobs:
             test-results/
             playwright-report/
           if-no-files-found: ignore
+
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose down
+
   selenium-smokes:
     name: Selenium Compatibility Smoke
     runs-on: ubuntu-latest
@@ -262,9 +292,9 @@ jobs:
         run: |
           google-chrome --version    
 
-      - name: Start backend
+      - name: Start application with Docker Compose
         run: |
-          uvicorn app.backend.main:app --host 0.0.0.0 --port 8000 &
+          docker compose up -d --build
 
       - name: Wait for backend
         run: |
@@ -272,10 +302,6 @@ jobs:
             --retry-delay 2 \
             --retry-connrefused \
             http://localhost:8000/health
-
-      - name: Start frontend
-        run: |
-          python -m http.server 3000 --directory app/frontend &
         
       - name: Wait for frontend
         run: |  
@@ -296,3 +322,13 @@ jobs:
           name: selenium-test-results
           path: test-results/
           if-no-files-found: ignore
+          
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose down

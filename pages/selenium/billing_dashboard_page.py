@@ -94,9 +94,14 @@ class BillingDashboardPage:
         self,
         invoice_id: str,
     ) -> None:
-        row = self.invoice_row(invoice_id)
-
-        assert row.is_displayed()
+        self.wait.until(
+            EC.visibility_of_element_located(
+                (
+                    By.CSS_SELECTOR,
+                    f'[data-testid="invoice-row-{invoice_id}"]',
+                )
+            )
+        )
 
     def expect_invoice_not_present(
         self,
@@ -116,13 +121,17 @@ class BillingDashboardPage:
         invoice_id: str,
         text: str,
     ) -> None:
-        row = self.invoice_row(invoice_id)
-
-        self.wait.until(
-            lambda driver: text in row.text
+        locator = (
+            By.CSS_SELECTOR,
+            f'[data-testid="invoice-row-{invoice_id}"]',
         )
 
-        assert text in row.text
+        self.wait.until(
+            EC.text_to_be_present_in_element(
+                locator,
+                text,
+            )
+        )
 
     def expect_invoice_status(
         self,
@@ -148,16 +157,18 @@ class BillingDashboardPage:
         self,
         invoice_id: str,
     ) -> None:
-        row = self.invoice_row(invoice_id)
-
-        button = row.find_element(
-            By.XPATH,
-            ".//button[normalize-space()='Mark as Paid']",
+        button_locator = (
+            By.CSS_SELECTOR,
+            (
+                f'[data-testid="invoice-row-{invoice_id}"] '
+                "button"
+            ),
         )
 
-        self.wait.until(
-            lambda driver: button.is_displayed()
-            and button.is_enabled()
+        button = self.wait.until(
+            EC.element_to_be_clickable(
+                button_locator
+            )
         )
 
         button.click()
