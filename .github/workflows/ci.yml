@@ -32,14 +32,15 @@ jobs:
 
       - name: Start backend with Docker Compose
         run: |
-          docker compose up -d --build backend
+          docker compose up -d --build --wait backend
 
-      - name: Wait for backend
+      - name: Verify backend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:8000/health
+            --retry-all-errors \
+            http://127.0.0.1:8000/health
 
       - name: Run API tests
         run: |
@@ -53,7 +54,7 @@ jobs:
           name: api-test-results
           path: test-results/
           if-no-files-found: ignore
-      
+
       - name: Show Docker Compose logs on failure
         if: failure()
         run: |
@@ -63,6 +64,7 @@ jobs:
         if: always()
         run: |
           docker compose down
+
 
   contract-tests:
     name: Contract Tests
@@ -85,14 +87,15 @@ jobs:
 
       - name: Start backend with Docker Compose
         run: |
-          docker compose up -d --build backend
+          docker compose up -d --build --wait backend
 
-      - name: Wait for backend
+      - name: Verify backend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:8000/health
+            --retry-all-errors \
+            http://127.0.0.1:8000/health
 
       - name: Run contract tests
         run: |
@@ -116,6 +119,7 @@ jobs:
         if: always()
         run: |
           docker compose down
+
 
   ui-tests:
     name: Playwright UI Tests
@@ -142,21 +146,23 @@ jobs:
 
       - name: Start application with Docker Compose
         run: |
-          docker compose up -d --build
+          docker compose up -d --build --wait
 
-      - name: Wait for backend
+      - name: Verify backend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:8000/health
+            --retry-all-errors \
+            http://127.0.0.1:8000/health
 
-      - name: Wait for frontend
+      - name: Verify frontend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:3000
+            --retry-all-errors \
+            http://127.0.0.1:3000
 
       - name: Run UI tests
         run: |
@@ -193,6 +199,7 @@ jobs:
         run: |
           docker compose down
 
+
   e2e-tests:
     name: End-to-End Tests
     runs-on: ubuntu-latest
@@ -218,21 +225,23 @@ jobs:
 
       - name: Start application with Docker Compose
         run: |
-          docker compose up -d --build
+          docker compose up -d --build --wait
 
-      - name: Wait for backend
+      - name: Verify backend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:8000/health
+            --retry-all-errors \
+            http://127.0.0.1:8000/health
 
-      - name: Wait for frontend
+      - name: Verify frontend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:3000
+            --retry-all-errors \
+            http://127.0.0.1:3000
 
       - name: Run E2E tests
         run: |
@@ -269,6 +278,7 @@ jobs:
         run: |
           docker compose down
 
+
   selenium-smokes:
     name: Selenium Compatibility Smoke
     runs-on: ubuntu-latest
@@ -290,25 +300,27 @@ jobs:
 
       - name: Check Chrome version
         run: |
-          google-chrome --version    
+          google-chrome --version
 
       - name: Start application with Docker Compose
         run: |
-          docker compose up -d --build
+          docker compose up -d --build --wait
 
-      - name: Wait for backend
+      - name: Verify backend
         run: |
-          curl --retry 10 \
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:8000/health
-        
-      - name: Wait for frontend
-        run: |  
-          curl --retry 10 \
+            --retry-all-errors \
+            http://127.0.0.1:8000/health
+
+      - name: Verify frontend
+        run: |
+          curl --fail \
+            --retry 10 \
             --retry-delay 2 \
-            --retry-connrefused \
-            http://localhost:3000
+            --retry-all-errors \
+            http://127.0.0.1:3000
 
       - name: Run Selenium smoke tests
         run: |
@@ -322,7 +334,7 @@ jobs:
           name: selenium-test-results
           path: test-results/
           if-no-files-found: ignore
-          
+
       - name: Show Docker Compose logs on failure
         if: failure()
         run: |
