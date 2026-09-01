@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "/api";
 
 const searchInput = document.querySelector("#customer-search");
 const statusFilter = document.querySelector("#status-filter");

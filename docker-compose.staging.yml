@@ -1,0 +1,22 @@
+services:
+  backend:
+    image: ghcr.io/mikarnival/telecom-billing-backend:${IMAGE_TAG}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    image: ghcr.io/mikarnival/telecom-billing-frontend:${IMAGE_TAG}
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
