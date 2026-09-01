@@ -1,0 +1,31 @@
+name: Cleanup GHCR Images
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "0 3 * * 0"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  cleanup:
+    name: Cleanup old GHCR images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cleanup backend images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: telecom-billing-backend
+          package-type: container
+          min-versions-to-keep: 5
+
+      - name: Cleanup frontend images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: telecom-billing-frontend
+          package-type: container
+          min-versions-to-keep: 5
