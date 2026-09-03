@@ -490,7 +490,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "curl --fail --retry 10 --retry-delay 2 http://127.0.0.1:3000",
-              "curl --fail --retry 10 --retry-delay 2 http://127.0.0.1:3000/api/health"
+              "curl --fail --retry 10 --retry-delay 2 http://127.0.0.1:3000/api/invoices"
             ]' \
             --query "Command.CommandId" \
             --output text)
