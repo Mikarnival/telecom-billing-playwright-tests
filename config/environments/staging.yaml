@@ -2,4 +2,4 @@ api_base_url: "http://localhost:3000"
 frontend_base_url: "http://localhost:3000"
 
 api_timeout_ms: 10000
-ui_timeout_ms: 10000naw
+ui_timeout_ms: 10000

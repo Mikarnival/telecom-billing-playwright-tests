@@ -1,4 +1,4 @@
-const API_BASE_URL = "/api";
+const API_BASE_URL = "";
 
 const searchInput = document.querySelector("#customer-search");
 const statusFilter = document.querySelector("#status-filter");

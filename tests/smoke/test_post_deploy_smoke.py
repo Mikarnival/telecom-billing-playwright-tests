@@ -1,7 +1,7 @@
 import pytest
 from playwright.sync_api import APIRequestContext
 
-
+@pytest.mark.staging
 @pytest.mark.smoke
 def test_staging_frontend_is_available(
     api_context: APIRequestContext,
@@ -10,7 +10,7 @@ def test_staging_frontend_is_available(
 
     assert response.status == 200
 
-
+@pytest.mark.staging
 @pytest.mark.smoke
 def test_staging_invoices_api_is_available(
     api_context: APIRequestContext,
