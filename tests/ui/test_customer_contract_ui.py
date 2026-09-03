@@ -2,7 +2,7 @@ import pytest
 from playwright.sync_api import Page, Route
 
 from pages.customer_contract_page import CustomerContractPage
-
+from api_clients.contract_client import ContractClient
 
 @pytest.mark.ui
 def test_customer_contract_section_loads(
@@ -79,16 +79,16 @@ def test_existing_customer_shows_related_contract(
 def test_draft_contract_can_be_activated_from_ui(
     configured_page: Page,
     frontend_base_url: str,
+    contract_client: ContractClient,
     reset_test_data: None,
 ) -> None:
-    configured_page.request.post(
-        "http://localhost:8000/api/contracts",
-        data={
-            "contract_id": "CON-9005",
-            "customer_id": "CUST-002",
-            "plan": "Fiber Trial",
-        },
+    response = contract_client.create_contract(
+        contract_id="CON-9005",
+        customer_id="CUST-002",
+        plan="Fiber Trial",
     )
+
+    assert response.status in (200, 201)
 
     def route_customer_invoice_search(route: Route) -> None:
         route.fulfill(
