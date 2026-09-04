@@ -1,4 +1,3 @@
-````md
 # Telecom Billing Test Automation
 
 A production-style QA automation project for a simulated telecom billing system.
